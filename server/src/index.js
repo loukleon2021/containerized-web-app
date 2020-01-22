@@ -21,33 +21,28 @@ const pgClient = new Pool({
   port: config.pgPort
 });
 pgClient.on('error', () => console.log('Lost Postgres connection'));
-//Create table
+
+//Resets and Initializes the Database with test data.
 pgClient
   .query(
     `
+  DROP TABLE IF EXISTS employees;
   CREATE TABLE IF NOT EXISTS employees (
     id uuid,
     employee_id integer NOT NUll,
     employee_name TEXT NOT NUll,
     PRIMARY KEY (id)
-  )
+  );
+  INSERT INTO employees (id, employee_id, employee_name) VALUES ('${uuid()}', 1, 'Zachary Barret');
+  INSERT INTO employees (id, employee_id, employee_name) VALUES ('${uuid()}', 2, 'Rosendo Lavoie');
+  INSERT INTO employees (id, employee_id, employee_name) VALUES ('${uuid()}', 3, 'Dahlia Presler');
+  INSERT INTO employees (id, employee_id, employee_name) VALUES ('${uuid()}', 4, 'Flora Dix');
+  INSERT INTO employees (id, employee_id, employee_name) VALUES ('${uuid()}', 5, 'Tabetha Happ');
+  INSERT INTO employees (id, employee_id, employee_name) VALUES ('${uuid()}', 6, 'Irvin Bruhn');
 `
   )
   .catch(err => console.log(err));
 
-// Populate Table with Test Data
-pgClient.query(`INSERT INTO employees (id, employee_id, employee_name) VALUES 
-($1, $2, $3)`,
-  [uuid(), 1, "George Foreman"]
-)
-pgClient.query(`INSERT INTO employees (id, employee_id, employee_name) VALUES 
-($1, $2, $3)`,
-  [uuid(), 2, "Samuel Jackson"]
-)
-pgClient.query(`INSERT INTO employees (id, employee_id, employee_name) VALUES 
-($1, $2, $3)`,
-  [uuid(), 3, "Jack Black"]
-)
 // Express route handlers
 app.get('/test', (req, res) => {
   res.send('Working!');
