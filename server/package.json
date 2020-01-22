@@ -9,8 +9,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "Luke Mwila",
-  "license": "ISC",
+  "author": "Ethan Cain",
+  "license": "None",
   "dependencies": {
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",

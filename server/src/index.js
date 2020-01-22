@@ -21,17 +21,33 @@ const pgClient = new Pool({
   port: config.pgPort
 });
 pgClient.on('error', () => console.log('Lost Postgres connection'));
+//Create table
 pgClient
   .query(
     `
   CREATE TABLE IF NOT EXISTS employees (
+    id uuid,
     employee_id integer NOT NUll,
     employee_name TEXT NOT NUll,
-    PRIMARY KEY (employee_id)
+    PRIMARY KEY (id)
   )
 `
   )
   .catch(err => console.log(err));
+
+// Populate Table with Test Data
+pgClient.query(`INSERT INTO employees (id, employee_id, employee_name) VALUES 
+($1, $2, $3)`,
+  [uuid(), 1, "George Foreman"]
+)
+pgClient.query(`INSERT INTO employees (id, employee_id, employee_name) VALUES 
+($1, $2, $3)`,
+  [uuid(), 2, "Samuel Jackson"]
+)
+pgClient.query(`INSERT INTO employees (id, employee_id, employee_name) VALUES 
+($1, $2, $3)`,
+  [uuid(), 3, "Jack Black"]
+)
 // Express route handlers
 app.get('/test', (req, res) => {
   res.send('Working!');
@@ -54,20 +70,23 @@ const employees = await pgClient
 res.status(200).send(employees.rows);
 });
 // Create an employee
-app.post('/v1/employees', async (req, res) => {
-  const { employee_id, employee_name} = req.body;
+app.post('/v1/employees?', async (req, res) => {
+  console.log(req.body)
+  const id = uuid();
+  const employee_id = req.body.employee_id;
+  const employee_name = req.body.employee_name;
   const employee = await pgClient
     .query(
-      `INSERT INTO employees (employee_id, employee_name) VALUES 
-    ($1, $2)`,
-      [employee_id, employee_name]
+      `INSERT INTO employees (id, employee_id, employee_name) VALUES 
+    ($1, $2, $3)`,
+      [id, employee_id, employee_name]
     )
     .catch(e => {
       res
         .status(500)
-        .send(`Encountered an internal error when creating the employee ${e.err}`, );
+        .send(`Encountered an internal error when creating the employee ${req.body.employee_id}`, );
     });
-res.status(201).send(`Employee created with ID: ${employee}`);
+res.status(201).send(`Employee created with ID:`);
 });
 // // Update a todo item
 // app.put('/v1/items/:id', async (req, res) => {
@@ -88,8 +107,8 @@ res.status(201).send(`Employee created with ID: ${employee}`);
 // res.status(200).send(`Item updated with ID: ${id}`);
 // });
 // Delete a todo item
-app.delete('/v1/employees/:employee_id', async (req, res) => {
-  const id = req.params.employee_id;
+app.delete('/v1/employees/:id', async (req, res) => {
+  const id = req.params.id;
 await pgClient.query('DELETE FROM employees WHERE id = $1', [id]).catch(e => {
     res.status(500).send('Encountered an internal error when deleting an employee');
   });
